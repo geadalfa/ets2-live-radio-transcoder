@@ -6,7 +6,10 @@ secara on-the-fly agar dapat diputar dengan sempurna oleh audio engine FMOD Euro
 
 import os
 import sys
+import time
+import queue
 import shutil
+import threading
 import subprocess
 from http.server import HTTPServer, ThreadingHTTPServer, BaseHTTPRequestHandler
 
@@ -33,16 +36,24 @@ STREAMS = {
     "/deltafm.mp3": {
         "name": "Delta FM Jakarta",
         "url": "https://stream.rcs.revma.com/k02rmq48kxcwv",
-        "bitrate": "128k"
+        "bitrate": "128k",
+        "persistent": True
     },
     "/femaleradio.mp3": {
         "name": "FeMale Radio Jakarta",
         "url": "https://stream.rcs.revma.com/9thenqqd2ncwv",
-        "bitrate": "128k"
+        "bitrate": "128k",
+        "persistent": True
     },
     "/prambors.mp3": {
         "name": "Prambors FM Jakarta",
         "url": "https://stream.rcs.revma.com/h77wwp48kxcwv",
+        "bitrate": "128k",
+        "persistent": True
+    },
+    "/deltabandung.mp3": {
+        "name": "Delta FM Bandung (Direct Icecast)",
+        "url": "https://stream-pd-bdg.dimasalfaridzi.my.id/delta",
         "bitrate": "128k"
     },
     "/genfm.mp3": {
@@ -144,6 +155,143 @@ def get_ffmpeg_path():
 FFMPEG_BIN = get_ffmpeg_path()
 
 
+class StreamBroadcaster:
+    """
+    Persistent Live Stream Broadcaster.
+    Menjaga koneksi upstream ke server CDN (seperti RCS Revma) tetap terbuka di background
+    sehingga jeda iklan pre-roll (DAI) hanya terjadi sekali di awal saat proxy start,
+    dan pemain di ETS2 dapat berpindah-pindah radio secara instan tanpa jeda iklan/kaset ke-reset.
+    """
+    def __init__(self, name, url, bitrate="128k", volume=None):
+        self.name = name
+        self.url = url
+        self.bitrate = bitrate
+        self.volume = volume
+        self.clients = set()
+        self.lock = threading.Lock()
+        self.running = True
+        self.proc = None
+        self.recent_chunks = []
+        self.max_recent = 4  # Buffer ~16KB untuk instant start FMOD di game
+        self.thread = threading.Thread(target=self._run, daemon=True)
+        self.thread.start()
+
+    def _run(self):
+        while self.running:
+            print(f"[*] Menghubungkan persistent live relay: {self.name}...")
+            cmd = [
+                FFMPEG_BIN,
+                "-hide_banner",
+                "-loglevel", "error",
+                "-user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                "-reconnect", "1",
+                "-reconnect_at_eof", "1",
+                "-reconnect_streamed", "1",
+                "-reconnect_delay_max", "5",
+                "-i", self.url,
+                "-vn",
+            ]
+            if self.volume:
+                cmd.extend(["-af", f"volume={self.volume},alimiter=limit=0.95"])
+            cmd.extend([
+                "-c:a", "libmp3lame",
+                "-b:a", self.bitrate,
+                "-ar", "44100",
+                "-ac", "2",
+                "-f", "mp3",
+                "pipe:1"
+            ])
+
+            flags = 0
+            if sys.platform == "win32":
+                flags = subprocess.CREATE_NO_WINDOW
+
+            try:
+                self.proc = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    bufsize=10**6,
+                    creationflags=flags
+                )
+
+                while self.running and self.proc.poll() is None:
+                    chunk = self.proc.stdout.read(4096)
+                    if not chunk:
+                        break
+
+                    with self.lock:
+                        self.recent_chunks.append(chunk)
+                        if len(self.recent_chunks) > self.max_recent:
+                            self.recent_chunks.pop(0)
+
+                        for q in list(self.clients):
+                            try:
+                                q.put_nowait(chunk)
+                            except queue.Full:
+                                try:
+                                    q.get_nowait()
+                                    q.put_nowait(chunk)
+                                except Exception:
+                                    pass
+            except Exception as e:
+                print(f"[!] Upstream error pada {self.name}: {e}")
+            finally:
+                if self.proc:
+                    try:
+                        self.proc.kill()
+                    except Exception:
+                        pass
+
+            if self.running:
+                print(f"[!] Upstream terputus untuk {self.name}. Reconnecting dalam 3 detik...")
+                time.sleep(3)
+
+    def add_client(self):
+        q = queue.Queue(maxsize=150)
+        with self.lock:
+            for c in self.recent_chunks:
+                try:
+                    q.put_nowait(c)
+                except Exception:
+                    pass
+            self.clients.add(q)
+        return q
+
+    def remove_client(self, q):
+        with self.lock:
+            self.clients.discard(q)
+
+    def stop(self):
+        self.running = False
+        if self.proc:
+            try:
+                self.proc.kill()
+            except Exception:
+                pass
+
+
+BROADCASTERS = {}
+BROADCASTERS_LOCK = threading.Lock()
+
+def get_broadcaster(path, station_info):
+    with BROADCASTERS_LOCK:
+        if path not in BROADCASTERS:
+            b = StreamBroadcaster(
+                name=station_info["name"],
+                url=station_info["url"],
+                bitrate=station_info.get("bitrate", "128k"),
+                volume=station_info.get("volume")
+            )
+            BROADCASTERS[path] = b
+        return BROADCASTERS[path]
+
+def start_persistent_relays():
+    for path, info in STREAMS.items():
+        if info.get("persistent"):
+            get_broadcaster(path, info)
+
+
 class RadioProxyHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         if sys.stdout and not sys.stdout.closed:
@@ -200,7 +348,6 @@ class RadioProxyHandler(BaseHTTPRequestHandler):
             return
 
         station = STREAMS[path]
-        print(f"[*] Client terhubung ke: {station['name']} ({station['url']})")
 
         # Kirim header HTTP audio/mpeg (MP3)
         self.send_response(200)
@@ -213,6 +360,30 @@ class RadioProxyHandler(BaseHTTPRequestHandler):
         self.send_header("icy-name", station["name"])
         self.send_header("icy-br", "128")
         self.end_headers()
+
+        # Jika stasiun menggunakan persistent relay (bebas iklan pre-roll & instant switch)
+        if station.get("persistent"):
+            broadcaster = get_broadcaster(path, station)
+            q = broadcaster.add_client()
+            print(f"[*] Client terhubung ke live persistent relay: {station['name']}")
+            try:
+                while True:
+                    try:
+                        chunk = q.get(timeout=5)
+                        self.wfile.write(chunk)
+                        self.wfile.flush()
+                    except queue.Empty:
+                        continue
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                pass
+            except Exception as e:
+                print(f"[!] Error saat streaming persistent relay: {e}")
+            finally:
+                broadcaster.remove_client(q)
+                print(f"[-] Client terputus dari: {station['name']} (relay tetap aktif di background).")
+            return
+
+        print(f"[*] Client terhubung ke (on-demand): {station['name']} ({station['url']})")
 
         # Jalankan FFmpeg untuk transcode AAC ke MP3 secara real-time via stdout pipe
         cmd = [
@@ -283,10 +454,15 @@ HTTP_SERVER = None
 def create_server(port=PORT):
     global HTTP_SERVER
     HTTP_SERVER = ThreadingHTTPServer(("127.0.0.1", port), RadioProxyHandler)
+    start_persistent_relays()
     return HTTP_SERVER
 
 def stop_server():
-    global HTTP_SERVER
+    global HTTP_SERVER, BROADCASTERS
+    with BROADCASTERS_LOCK:
+        for b in list(BROADCASTERS.values()):
+            b.stop()
+        BROADCASTERS.clear()
     if HTTP_SERVER:
         try:
             HTTP_SERVER.shutdown()
