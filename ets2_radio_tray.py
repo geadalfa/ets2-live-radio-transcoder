@@ -14,7 +14,19 @@ from http.server import ThreadingHTTPServer
 # Pastikan working directory ke folder script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(SCRIPT_DIR)
-sys.path.insert(0, SCRIPT_DIR)
+# Penanganan output stream jika dijalankan via pythonw.exe (windowless mode)
+LOG_FILE = os.path.join(SCRIPT_DIR, "tray.log")
+if sys.stdout is None:
+    try:
+        sys.stdout = open(LOG_FILE, "a", encoding="utf-8", buffering=1)
+    except Exception:
+        sys.stdout = open(os.devnull, "w")
+
+if sys.stderr is None:
+    try:
+        sys.stderr = open(LOG_FILE, "a", encoding="utf-8", buffering=1)
+    except Exception:
+        sys.stderr = open(os.devnull, "w")
 
 # Import modul proxy
 import ets2_radio_proxy
@@ -123,14 +135,6 @@ class RadioTrayApp:
         # Tampilkan Tray Icon
         self.tray.show()
 
-        # Kirim notifikasi toast pertama kali
-        self.tray.showMessage(
-            "ETS2 Radio Transcoder",
-            f"Transcoder aktif di background (Port {PORT}).\nSiap memutar Delta FM, Female, KIS, Prambors, J1 Hits, dll!",
-            QSystemTrayIcon.Information,
-            3500
-        )
-
     def start_server(self):
         if self.server_thread and self.server_thread._is_running:
             return
@@ -141,13 +145,9 @@ class RadioTrayApp:
         if self.server_thread:
             self.server_thread.stop()
         self.kill_ffmpeg()
+        import importlib
+        importlib.reload(ets2_radio_proxy)
         self.start_server()
-        self.tray.showMessage(
-            "ETS2 Radio Transcoder",
-            "Server proxy berhasil di-restart!",
-            QSystemTrayIcon.Information,
-            2000
-        )
 
     def open_dashboard(self):
         webbrowser.open(f"http://127.0.0.1:{PORT}/health")
@@ -193,5 +193,19 @@ class RadioTrayApp:
 
 
 if __name__ == "__main__":
-    app = RadioTrayApp()
-    sys.exit(app.run())
+    import traceback
+    try:
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write("[TRAY] Initializing RadioTrayApp...\n")
+        app = RadioTrayApp()
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write("[TRAY] Running app.exec_()...\n")
+        ret = app.run()
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(f"[TRAY] app.exec_() exited with code: {ret}\n")
+        sys.exit(ret)
+    except Exception as e:
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(f"[TRAY ERROR] Exception: {e}\n")
+            traceback.print_exc(file=f)
+        sys.exit(1)
