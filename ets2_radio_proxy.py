@@ -58,7 +58,8 @@ STREAMS = {
     "/aberadio.mp3": {
         "name": "Abe Radio Online - Jazz",
         "url": "https://stream.zeno.fm/hslkouvwisovv",
-        "bitrate": "128k"
+        "bitrate": "128k",
+        "volume": "3dB"
     },
     "/waveanime.mp3": {
         "name": "Wave Anime Radio",
@@ -68,17 +69,20 @@ STREAMS = {
     "/j1hits.mp3": {
         "name": "J1 HITS Tokyo",
         "url": "https://jenny.torontocast.com:2000/stream/J1HITS",
-        "bitrate": "128k"
+        "bitrate": "128k",
+        "volume": "4.5dB"
     },
     "/j1gold.mp3": {
         "name": "J1 GOLD Tokyo",
         "url": "https://jenny.torontocast.com:2000/stream/J1GOLD",
-        "bitrate": "128k"
+        "bitrate": "128k",
+        "volume": "7dB"
     },
     "/onlyhits.mp3": {
         "name": "OnlyHits Japan",
         "url": "https://cdn.onlyhitsradio.net/japan",
-        "bitrate": "128k"
+        "bitrate": "128k",
+        "volume": "10dB"
     },
     "/listenmoe.mp3": {
         "name": "LISTEN.moe J-Pop",
@@ -88,22 +92,26 @@ STREAMS = {
     "/citypop.mp3": {
         "name": "BOX - Japan City Pop",
         "url": "https://play.streamafrica.net/japancitypop",
-        "bitrate": "128k"
+        "bitrate": "128k",
+        "volume": "3.5dB"
     },
     "/fmsetagaya.mp3": {
         "name": "FM Setagaya 83.4",
         "url": "https://fmsetagaya834.out.airtime.pro/fmsetagaya834_a",
-        "bitrate": "128k"
+        "bitrate": "128k",
+        "volume": "12dB"
     },
     "/jrock.mp3": {
         "name": "J-Rock Powerplay",
         "url": "https://kathy.torontocast.com:3340/;",
-        "bitrate": "128k"
+        "bitrate": "128k",
+        "volume": "7dB"
     },
     "/sakura.mp3": {
         "name": "J-Pop Sakura",
         "url": "http://quincy.torontocast.com:2070/stream.mp3",
-        "bitrate": "128k"
+        "bitrate": "128k",
+        "volume": "5dB"
     }
 }
 
@@ -218,13 +226,21 @@ class RadioProxyHandler(BaseHTTPRequestHandler):
             "-reconnect_delay_max", "5",
             "-i", station["url"],
             "-vn",
+        ]
+
+        vol_boost = station.get("volume")
+        if vol_boost:
+            # Boost volume dan pasang audio limiter agar tidak digital clipping/pecah
+            cmd.extend(["-af", f"volume={vol_boost},alimiter=limit=0.95"])
+
+        cmd.extend([
             "-c:a", "libmp3lame",
             "-b:a", station.get("bitrate", "128k"),
             "-ar", "44100",
             "-ac", "2",
             "-f", "mp3",
             "pipe:1"
-        ]
+        ])
 
         flags = 0
         if sys.platform == "win32":
