@@ -47,6 +47,7 @@ class ProxyServerThread(threading.Thread):
         try:
             self.server = ThreadingHTTPServer(("127.0.0.1", self.port), RadioProxyHandler)
             ets2_radio_proxy.HTTP_SERVER = self.server
+            ets2_radio_proxy.start_persistent_relays()
             self._is_running = True
             self.server.serve_forever()
         except Exception as e:
@@ -55,15 +56,9 @@ class ProxyServerThread(threading.Thread):
             self._is_running = False
 
     def stop(self):
-        if self.server:
-            try:
-                self.server.shutdown()
-                self.server.server_close()
-            except Exception:
-                pass
-            self.server = None
-            ets2_radio_proxy.HTTP_SERVER = None
-            self._is_running = False
+        ets2_radio_proxy.stop_server()
+        self.server = None
+        self._is_running = False
 
 
 class RadioTrayApp:
