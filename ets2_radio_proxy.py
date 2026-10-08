@@ -70,15 +70,13 @@ STREAMS = {
         "name": "Delta FM Jakarta",
         "url": "https://stream.rcs.revma.com/k02rmq48kxcwv",
         "bitrate": "128k",
-        "volume": "1dB",
-        "persistent": True
+        "volume": "1dB"
     },
     "/femaleradio.mp3": {
         "name": "FeMale Radio Jakarta",
         "url": "https://stream.rcs.revma.com/9thenqqd2ncwv",
         "bitrate": "128k",
-        "volume": "5dB",
-        "persistent": True
+        "volume": "5dB"
     },
     "/iradio.mp3": {
         "name": "I-Radio / I-Rock Jakarta",
@@ -120,20 +118,13 @@ STREAMS = {
         "name": "Prambors FM Jakarta",
         "url": "https://stream.rcs.revma.com/h77wwp48kxcwv",
         "bitrate": "128k",
-        "volume": "2.5dB",
-        "persistent": True
+        "volume": "2.5dB"
     },
     "/aberadio.mp3": {
         "name": "Abe Radio Online - Jazz",
         "url": "https://stream.zeno.fm/hslkouvwisovv",
         "bitrate": "128k",
         "volume": "4.5dB"
-    },
-    "/deltabandung.mp3": {
-        "name": "Delta FM Bandung (Direct Icecast)",
-        "url": "https://stream-pd-bdg.dimasalfaridzi.my.id/delta",
-        "bitrate": "128k",
-        "volume": "0dB"
     },
 
     # --- Radio Bahasa Jepang ---
