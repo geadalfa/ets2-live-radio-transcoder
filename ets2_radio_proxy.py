@@ -33,55 +33,211 @@ PORT = 8000
 
 # Pemetaan stasiun radio ke URL stream sumber resmi (AAC)
 STREAMS = {
+    # --- Radio Bahasa Inggris / Simulation Radio ---
+    "/truckersfm.mp3": {
+        "name": "TruckersFM",
+        "url": "https://radio.truckers.fm/",
+        "bitrate": "128k",
+        "volume": "1dB"
+    },
+    "/simulatorradio.mp3": {
+        "name": "Simulator Radio",
+        "url": "http://radio.simulatorradio.com:8002/stream.mp3",
+        "bitrate": "128k",
+        "volume": "4.5dB"
+    },
+    "/trucksimfm.mp3": {
+        "name": "TruckSimFM",
+        "url": "http://radio.trucksim.fm:8000/stream",
+        "bitrate": "128k",
+        "volume": "2.5dB"
+    },
+    "/simliveradio.mp3": {
+        "name": "SimLiveRadio",
+        "url": "http://stream.laut.fm/simliveradio",
+        "bitrate": "128k",
+        "volume": "0dB"
+    },
+    "/greatesthits.mp3": {
+        "name": "Geratest Hits Non-Stop",
+        "url": "https://strw3.openstream.co/422?aw_0_1st.collectionid=7465&stationId=7465&publisherId=242&k=1772636426",
+        "bitrate": "128k",
+        "volume": "0dB"
+    },
+
+    # --- Radio Bahasa Indonesia ---
     "/deltafm.mp3": {
         "name": "Delta FM Jakarta",
         "url": "https://stream.rcs.revma.com/k02rmq48kxcwv",
         "bitrate": "128k",
+        "volume": "1dB",
         "persistent": True
     },
     "/femaleradio.mp3": {
         "name": "FeMale Radio Jakarta",
         "url": "https://stream.rcs.revma.com/9thenqqd2ncwv",
         "bitrate": "128k",
+        "volume": "5dB",
         "persistent": True
+    },
+    "/iradio.mp3": {
+        "name": "I-Radio / I-Rock Jakarta",
+        "url": "http://stream.radiojar.com/4ywdgup3bnzuv",
+        "bitrate": "128k",
+        "volume": "1dB"
+    },
+    "/kisfm.mp3": {
+        "name": "KIS FM Jakarta",
+        "url": "https://ic.mari.co.id:8443/kisfm",
+        "bitrate": "128k",
+        "volume": "4dB"
+    },
+    "/genfm.mp3": {
+        "name": "Gen FM Jakarta",
+        "url": "https://ic.mari.co.id:8443/genfm",
+        "bitrate": "128k",
+        "volume": "4dB"
+    },
+    "/sonora.mp3": {
+        "name": "Sonora FM 92 Jakarta",
+        "url": "https://sonora-radio.arenastreaming.com/8130/stream",
+        "bitrate": "128k",
+        "volume": "1.5dB"
+    },
+    "/vradio.mp3": {
+        "name": "V Radio 106.6 FM Jakarta",
+        "url": "http://8.215.206.157:8008/;",
+        "bitrate": "128k",
+        "volume": "3.5dB"
+    },
+    "/hardrock.mp3": {
+        "name": "Hard Rock FM 87.6 Jakarta",
+        "url": "http://stream.radiojar.com/7csmg90fuqruv",
+        "bitrate": "128k",
+        "volume": "0.5dB"
     },
     "/prambors.mp3": {
         "name": "Prambors FM Jakarta",
         "url": "https://stream.rcs.revma.com/h77wwp48kxcwv",
         "bitrate": "128k",
+        "volume": "2.5dB",
         "persistent": True
-    },
-    "/deltabandung.mp3": {
-        "name": "Delta FM Bandung (Direct Icecast)",
-        "url": "https://stream-pd-bdg.dimasalfaridzi.my.id/delta",
-        "bitrate": "128k"
-    },
-    "/genfm.mp3": {
-        "name": "Gen FM Jakarta",
-        "url": "https://ic.mari.co.id:8443/genfm",
-        "bitrate": "128k"
-    },
-    "/kisfm.mp3": {
-        "name": "KIS FM Jakarta",
-        "url": "https://ic.mari.co.id:8443/kisfm",
-        "bitrate": "128k"
     },
     "/aberadio.mp3": {
         "name": "Abe Radio Online - Jazz",
         "url": "https://stream.zeno.fm/hslkouvwisovv",
         "bitrate": "128k",
-        "volume": "3dB"
+        "volume": "4.5dB"
     },
-    "/waveanime.mp3": {
-        "name": "Wave Anime Radio",
-        "url": "https://channel_1.waveani.fun/stream",
-        "bitrate": "192k"
+    "/deltabandung.mp3": {
+        "name": "Delta FM Bandung (Direct Icecast)",
+        "url": "https://stream-pd-bdg.dimasalfaridzi.my.id/delta",
+        "bitrate": "128k",
+        "volume": "0dB"
     },
+
+    # --- Radio Bahasa Jepang ---
     "/j1hits.mp3": {
         "name": "J1 HITS Tokyo",
         "url": "https://jenny.torontocast.com:2000/stream/J1HITS",
         "bitrate": "128k",
         "volume": "4.5dB"
+    },
+    "/onlyhits.mp3": {
+        "name": "OnlyHits Japan",
+        "url": "https://cdn.onlyhitsradio.net/japan",
+        "bitrate": "128k",
+        "volume": "11dB"
+    },
+    "/japanhits.mp3": {
+        "name": "Japan Hits - asia DREAM radio",
+        "url": "http://quincy.torontocast.com:2020/stream.mp3",
+        "bitrate": "128k",
+        "volume": "3.5dB"
+    },
+    "/jrock.mp3": {
+        "name": "J-Rock Powerplay",
+        "url": "https://kathy.torontocast.com:3340/;",
+        "bitrate": "128k",
+        "volume": "8dB"
+    },
+    "/listenmoe.mp3": {
+        "name": "LISTEN.moe J-Pop",
+        "url": "https://listen.moe/fallback",
+        "bitrate": "192k",
+        "volume": "0dB"
+    },
+    "/jpop.mp3": {
+        "name": "J-Pop Powerplay",
+        "url": "https://kathy.torontocast.com:3560/;",
+        "bitrate": "128k",
+        "volume": "2dB"
+    },
+    "/jpopkawaii.mp3": {
+        "name": "J-Pop Powerplay Kawaii",
+        "url": "https://kathy.torontocast.com:3060/;",
+        "bitrate": "128k",
+        "volume": "4dB"
+    },
+    "/sakura.mp3": {
+        "name": "J-Pop Sakura",
+        "url": "http://quincy.torontocast.com:2070/stream.mp3",
+        "bitrate": "128k",
+        "volume": "14dB"
+    },
+    "/stereoanime.mp3": {
+        "name": "Stereo Anime",
+        "url": "https://radio.stereoanime.com/listen/stereoanime/128",
+        "bitrate": "128k",
+        "volume": "2dB"
+    },
+    "/waveanime.mp3": {
+        "name": "Wave Anime Radio",
+        "url": "https://channel_1.waveani.fun/stream",
+        "bitrate": "192k",
+        "volume": "0.5dB"
+    },
+    "/animefm.mp3": {
+        "name": "Anime FM",
+        "url": "https://animefm.stream.laut.fm/animefm",
+        "bitrate": "128k",
+        "volume": "4dB"
+    },
+    "/justplay.mp3": {
+        "name": "Justplay Anime & J-Pop",
+        "url": "https://justplay.stream.laut.fm/justplay",
+        "bitrate": "128k",
+        "volume": "3.5dB"
+    },
+    "/kibofm.mp3": {
+        "name": "Kibo.FM",
+        "url": "http://listen.kibo.fm:8000/kibofm",
+        "bitrate": "192k",
+        "volume": "14dB"
+    },
+    "/otakuworld.mp3": {
+        "name": "Otaku World",
+        "url": "https://otaku-world.stream.laut.fm/otaku-world",
+        "bitrate": "128k",
+        "volume": "1dB"
+    },
+    "/citypop.mp3": {
+        "name": "BOX - Japan City Pop",
+        "url": "https://play.streamafrica.net/japancitypop",
+        "bitrate": "128k",
+        "volume": "6dB"
+    },
+    "/freefmtokyo.mp3": {
+        "name": "Free FM Tokyo",
+        "url": "https://rocafmadrid.radioca.st/stream",
+        "bitrate": "128k",
+        "volume": "2dB"
+    },
+    "/bigbradio.mp3": {
+        "name": "Big B Radio - JPOP",
+        "url": "http://pureplay.cdnstream1.com/6027_128.mp3",
+        "bitrate": "128k",
+        "volume": "1.5dB"
     },
     "/j1gold.mp3": {
         "name": "J1 GOLD Tokyo",
@@ -89,40 +245,23 @@ STREAMS = {
         "bitrate": "128k",
         "volume": "7dB"
     },
-    "/onlyhits.mp3": {
-        "name": "OnlyHits Japan",
-        "url": "https://cdn.onlyhitsradio.net/japan",
-        "bitrate": "128k",
-        "volume": "10dB"
-    },
-    "/listenmoe.mp3": {
-        "name": "LISTEN.moe J-Pop",
-        "url": "https://listen.moe/fallback",
-        "bitrate": "192k"
-    },
-    "/citypop.mp3": {
-        "name": "BOX - Japan City Pop",
-        "url": "https://play.streamafrica.net/japancitypop",
-        "bitrate": "128k",
-        "volume": "3.5dB"
-    },
     "/fmsetagaya.mp3": {
         "name": "FM Setagaya 83.4",
         "url": "https://fmsetagaya834.out.airtime.pro/fmsetagaya834_a",
         "bitrate": "128k",
         "volume": "12dB"
     },
-    "/jrock.mp3": {
-        "name": "J-Rock Powerplay",
-        "url": "https://kathy.torontocast.com:3340/;",
+    "/shonanbeach.mp3": {
+        "name": "Shonan Beach FM 78.9",
+        "url": "http://shonanbeachfm.out.airtime.pro:8000/shonanbeachfm_a",
         "bitrate": "128k",
-        "volume": "7dB"
+        "volume": "6.5dB"
     },
-    "/sakura.mp3": {
-        "name": "J-Pop Sakura",
-        "url": "http://quincy.torontocast.com:2070/stream.mp3",
+    "/mikuradio.mp3": {
+        "name": "Miku Radio",
+        "url": "https://miku.fm/listen/miku/mp3-320",
         "bitrate": "128k",
-        "volume": "5dB"
+        "volume": "6.5dB"
     }
 }
 
@@ -191,8 +330,8 @@ class StreamBroadcaster:
                 "-i", self.url,
                 "-vn",
             ]
-            if self.volume:
-                cmd.extend(["-af", f"volume={self.volume},alimiter=limit=0.95"])
+            vol_boost = self.volume if self.volume else "0dB"
+            cmd.extend(["-af", f"volume={vol_boost},alimiter=limit=0.95"])
             cmd.extend([
                 "-c:a", "libmp3lame",
                 "-b:a", self.bitrate,
@@ -399,10 +538,9 @@ class RadioProxyHandler(BaseHTTPRequestHandler):
             "-vn",
         ]
 
-        vol_boost = station.get("volume")
-        if vol_boost:
-            # Boost volume dan pasang audio limiter agar tidak digital clipping/pecah
-            cmd.extend(["-af", f"volume={vol_boost},alimiter=limit=0.95"])
+        vol_boost = station.get("volume", "0dB")
+        # Boost volume terkalibrasi dan pasang brickwall audio limiter agar tidak digital clipping/pecah
+        cmd.extend(["-af", f"volume={vol_boost},alimiter=limit=0.95"])
 
         cmd.extend([
             "-c:a", "libmp3lame",
