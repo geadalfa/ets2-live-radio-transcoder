@@ -70,13 +70,15 @@ STREAMS = {
         "name": "Delta FM Jakarta",
         "url": "https://stream.rcs.revma.com/k02rmq48kxcwv",
         "bitrate": "128k",
-        "volume": "1dB"
+        "volume": "1dB",
+        "persistent": True
     },
     "/femaleradio.mp3": {
         "name": "FeMale Radio Jakarta",
         "url": "https://stream.rcs.revma.com/9thenqqd2ncwv",
         "bitrate": "128k",
-        "volume": "5dB"
+        "volume": "5dB",
+        "persistent": True
     },
     "/iradio.mp3": {
         "name": "I-Radio / I-Rock Jakarta",
@@ -118,7 +120,8 @@ STREAMS = {
         "name": "Prambors FM Jakarta",
         "url": "https://stream.rcs.revma.com/h77wwp48kxcwv",
         "bitrate": "128k",
-        "volume": "2.5dB"
+        "volume": "2.5dB",
+        "persistent": True
     },
     "/aberadio.mp3": {
         "name": "Abe Radio Online - Jazz",
@@ -299,10 +302,11 @@ class StreamBroadcaster:
         self.volume = volume
         self.clients = set()
         self.lock = threading.Lock()
+        self.id3_header = b""
+        self.audio_buffer = bytearray()
+        self.max_buffer = 64 * 1024  # 64 KB ring buffer (~4 detik audio)
         self.running = True
         self.proc = None
-        self.recent_chunks = []
-        self.max_recent = 4  # Buffer ~16KB untuk instant start FMOD di game
         self.thread = threading.Thread(target=self._run, daemon=True)
         self.thread.start()
 
@@ -345,15 +349,29 @@ class StreamBroadcaster:
                     creationflags=flags
                 )
 
+                # Ekstraksi ID3 header awal agar klien baru (FMOD) selalu menerima format valid
+                first_chunk = self.proc.stdout.read(4096)
+                if first_chunk:
+                    if first_chunk[:3] == b"ID3":
+                        size = (first_chunk[6] << 21) | (first_chunk[7] << 14) | (first_chunk[8] << 7) | first_chunk[9]
+                        id3_len = 10 + size
+                        self.id3_header = first_chunk[:id3_len]
+                        audio_data = first_chunk[id3_len:]
+                    else:
+                        audio_data = first_chunk
+
+                    with self.lock:
+                        self.audio_buffer.extend(audio_data)
+
                 while self.running and self.proc.poll() is None:
                     chunk = self.proc.stdout.read(4096)
                     if not chunk:
                         break
 
                     with self.lock:
-                        self.recent_chunks.append(chunk)
-                        if len(self.recent_chunks) > self.max_recent:
-                            self.recent_chunks.pop(0)
+                        self.audio_buffer.extend(chunk)
+                        if len(self.audio_buffer) > self.max_buffer:
+                            del self.audio_buffer[:-self.max_buffer]
 
                         for q in list(self.clients):
                             try:
@@ -378,13 +396,25 @@ class StreamBroadcaster:
                 time.sleep(3)
 
     def add_client(self):
-        q = queue.Queue(maxsize=150)
+        q = queue.Queue(maxsize=200)
         with self.lock:
-            for c in self.recent_chunks:
-                try:
-                    q.put_nowait(c)
-                except Exception:
-                    pass
+            # 1. Selalu kirim ID3 header di awal koneksi klien baru
+            if self.id3_header:
+                q.put_nowait(self.id3_header)
+
+            # 2. Cari sync word (0xFF 0xFB atau 0xFF 0xFA) di dalam buffer audio
+            buf = bytes(self.audio_buffer)
+            sync_idx = -1
+            for i in range(len(buf) - 1):
+                if buf[i] == 0xFF and (buf[i+1] & 0xFE) == 0xFA:
+                    sync_idx = i
+                    break
+
+            if sync_idx != -1:
+                q.put_nowait(buf[sync_idx:])
+            elif buf:
+                q.put_nowait(buf)
+
             self.clients.add(q)
         return q
 
