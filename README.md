@@ -37,9 +37,11 @@ When you tune into a transcoded radio station in ETS2, the proxy:
 - **Native Windows System Tray App:** Runs quietly in the notification area (next to your taskbar clock and Steam).
 - **1-Click Launch & Exit:** Right-click tray icon to Open Status Web Dashboard, Restart Server, or Cleanly Exit (just like Steam).
 - **Zero Window Footprint:** Runs windowless with `pythonw.exe` without distracting command prompt popups.
+- **Smart Audio Normalization & Brickwall Limiter:** Automatic gain boost calibrated per stream combined with FFmpeg `alimiter=limit=0.95`, raising whisper-quiet Japanese/indie streams to commercial loudness while completely preventing digital clipping/distortion.
+- **Persistent Live Stream Relays (No Ad-Loop / Cassette Reset):** Keeps background relays connected for RCS Revma networks (Delta FM, FeMale Radio, Prambors) so you can switch channels instantly with zero pre-roll commercial delays.
 - **Pre-Configured Station Catalog:**
   - **Indonesia:** Delta FM, FeMale Radio, Prambors FM, Gen FM, KIS FM, I-Radio, Hard Rock FM, Sonora FM 92, V Radio 106.6, Abe Radio Jazz.
-  - **Japan & Anime:** J1 HITS Tokyo, OnlyHits Japan (YOASOBI, Official HIGE DANDISM, Ado), J-Rock Powerplay, LISTEN.moe, Wave Anime Radio, Stereo Anime, BOX Japan City Pop, Free FM 80 Tokyo, FM Setagaya 83.4, Miku Radio.
+  - **Japan & Anime:** J1 HITS Tokyo, OnlyHits Japan (YOASOBI, Official HIGE DANDISM, Ado), J-Rock Powerplay, LISTEN.moe, Wave Anime Radio, Stereo Anime, BOX Japan City Pop, Free FM Tokyo, FM Setagaya 83.4, Miku Radio.
   - **Sim Radios:** TruckersFM, Simulator Radio, TruckSimFM, SimLiveRadio, Greatest Hits Non-Stop.
 
 ---
@@ -92,7 +94,8 @@ STREAMS = {
     "/myradio.mp3": {
         "name": "My Favorite Radio",
         "url": "https://stream.example.com/live.aac",   # Direct source stream URL (AAC, AAC+, MP3, etc.)
-        "bitrate": "128k"                               # Output MP3 bitrate (128k, 192k, 256k, 320k)
+        "bitrate": "128k",                              # Output MP3 bitrate (128k, 192k, 256k, 320k)
+        "volume": "4dB"                                 # Optional loudness boost (e.g., "3dB", "11dB", or "0dB")
     }
 }
 ```
@@ -145,9 +148,11 @@ Saat kamu memilih radio di game:
 ### ✨ Fitur Unggulan
 - **Aplikasi System Tray Windows (Mirip Steam):** Berjalan di latar belakang tanpa jendela command prompt hitam yang mengganggu. Ikon radio muncul di pojok kanan bawah taskbar.
 - **1 Tombol Start & Exit:** Cukup double-click untuk mulai. Klik kanan ikon di tray untuk membuka dashboard status atau keluar (*Exit*) secara bersih.
+- **Auto Volume Leveling & Audio Limiter:** Peningkatan kenyaringan suara terkalibrasi per stasiun yang digabungkan dengan limiter audio (`alimiter=limit=0.95`). Radio indie/Jepang yang suaranya kecil otomatis terangkat ke standar siaran komersial tanpa distorsi/pecah suara.
+- **Persistent Live Relay (Bebas Loop Iklan / Kaset Ke-reset):** Koneksi background dijaga tetap menyala khusus jaringan RCS Revma (Delta FM, FeMale Radio, Prambors) agar kamu bisa ganti-ganti stasiun instan tanpa jeda iklan pengantar berulang.
 - **Daftar Stasiun Populer Siap Pakai:**
   - **Indonesia:** Delta FM, FeMale Radio, Prambors FM, Gen FM, KIS FM, I-Radio Jakarta, Hard Rock FM, Sonora FM 92, V Radio 106.6, Abe Radio Jazz.
-  - **Jepang & Anime:** J1 HITS Tokyo, OnlyHits Japan (YOASOBI, Official HIGE DANDISM, Ado), J-Rock Powerplay, LISTEN.moe, Wave Anime Radio, Stereo Anime, BOX Japan City Pop, Free FM 80 Tokyo, FM Setagaya 83.4, Miku Radio.
+  - **Jepang & Anime:** J1 HITS Tokyo, OnlyHits Japan (YOASOBI, Official HIGE DANDISM, Ado), J-Rock Powerplay, LISTEN.moe, Wave Anime Radio, Stereo Anime, BOX Japan City Pop, Free FM Tokyo, FM Setagaya 83.4, Miku Radio.
   - **Simulator:** TruckersFM, Simulator Radio, TruckSimFM, SimLiveRadio, Greatest Hits Non-Stop.
 
 ---
@@ -199,7 +204,8 @@ STREAMS = {
     "/radiorock.mp3": {
         "name": "Radio Rock Indonesia",
         "url": "https://stream.server.com/live.aac",   # URL stream asli (format apa saja: AAC, AAC+, dsb.)
-        "bitrate": "128k"                              # Kualitas bitrate MP3 output
+        "bitrate": "128k",                             # Kualitas bitrate MP3 output
+        "volume": "4dB"                                # Opsional: boost desibel jika suara terlalu kecil (contoh: "3dB", "10dB")
     }
 }
 ```
